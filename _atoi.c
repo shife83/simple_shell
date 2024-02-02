@@ -1,56 +1,54 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <dirent.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include "shell.h"
 
-// Function to list directory contents
-int my_ls(char *path) {
-    DIR *dir;
-    struct dirent *ent;
-    struct stat statbuf;
 
-    // Change directory (handle errors)
-    if (chdir(path) != 0) {
-        perror("chdir");
-        return EXIT_FAILURE;
-    }
-
-    // Open directory (handle errors)
-    dir = opendir(".");
-    if (dir == NULL) {
-        perror("opendir");
-        return EXIT_FAILURE;
-    }
-
-    // Read directory entries and print file names
-    while ((ent = readdir(dir)) != NULL) {
-        // Get file attributes (handle errors)
-        if (stat(ent->d_name, &statbuf) != 0) {
-            perror("stat");
-            continue;
-        }
-
-        // Check if regular file and print name
-        if (S_ISREG(statbuf.st_mode)) {
-            printf("%s\n", ent->d_name);
-        }
-    }
-
-    // Close directory and change back
-    closedir(dir);
-    chdir("..");
-
-    return EXIT_SUCCESS;
+int interactive(info_t *info)
+{
+	return (isatty(STDIN_FILENO) && info->readfd <= 2);
 }
 
-int main(int argc, char *argv[]) {
-    // Handle options and call my_ls
-    if (argc > 2) {
-        fprintf(stderr, "usage: %s [directory]\n", argv[0]);
-        return EXIT_FAILURE;
-    }
 
-    return my_ls(argc == 2 ? argv[1] : ".");
+int is_delim(char c, char *delim)
+{
+	while (*delim)
+		if (*delim++ == c)
+			return (1);
+	return (0);
 }
 
+
+int _isalpha(int c)
+{
+	if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+		return (1);
+	else
+		return (0);
+}
+
+
+int _atoi(char *s)
+{
+	int i, sign = 1, flag = 0, output;
+	unsigned int result = 0;
+
+	for (i = 0;  s[i] != '\0' && flag != 2; i++)
+	{
+		if (s[i] == '-')
+			sign *= -1;
+
+		if (s[i] >= '0' && s[i] <= '9')
+		{
+			flag = 1;
+			result *= 10;
+			result += (s[i] - '0');
+		}
+		else if (flag == 1)
+			flag = 2;
+	}
+
+	if (sign == -1)
+		output = -result;
+	else
+		output = result;
+
+	return (output);
+}
